@@ -16,7 +16,6 @@ const App = () => {
     { id: 1, text: '¡Hola! ¿En qué puedo ayudarte hoy?', sender: 'bot', timestamp: new Date() },
   ]);
   const [messageText, setMessageText] = useState('');
-  const [isLoading, setIsLoading] = useState(true); // New state for loading screen
 
   useEffect(() => {
     const loadData = async () => {
@@ -25,11 +24,6 @@ const App = () => {
       console.log("Datos cargados desde AsyncStorage:", savedUsername, savedImage);
       if (savedUsername) setUsername(savedUsername);
       if (savedImage) setImage(savedImage);
-
-      // Simulate a loading period before moving to the main screen
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000); // Adjust the time as needed
     };
     loadData();
   }, []);
@@ -69,9 +63,9 @@ const App = () => {
 
       let botResponse = '';
       if (messageText.toLowerCase().includes('hola')) {
-        botResponse = `¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?`;
+        botResponse = ¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?;
       } else if (messageText.toLowerCase().includes('adiós')) {
-        botResponse = `Adiós ${username || 'usuario'}! Espero que hablemos pronto.`;
+        botResponse = Adiós ${username || 'usuario'}! Espero que hablemos pronto.;
       } else {
         botResponse = 'Lo siento, no puedo entenderte. ¿En qué puedo ayudarte?';
       }
@@ -92,7 +86,7 @@ const App = () => {
 
   const resetMessages = () => {
     setMessages([ 
-      { id: 1, text: `¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?`, sender: 'bot', timestamp: new Date() },
+      { id: 1, text: ¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?, sender: 'bot', timestamp: new Date() },
     ]);
   };
 
@@ -110,11 +104,11 @@ const App = () => {
     const hours = date.getHours() % 12 || 12;
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-    const timeString = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+    const timeString = ${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm};
 
-    if (isToday) return `Hoy`;
-    if (isYesterday) return `Ayer`;
-    return `${dateString}`;
+    if (isToday) return Hoy;
+    if (isYesterday) return Ayer;
+    return ${dateString};
   };
 
   const formatTime = (timestamp) => {
@@ -122,17 +116,8 @@ const App = () => {
     const hours = date.getHours() % 12 || 12;
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-    return `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+    return ${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm};
   };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Image source={kimyImage} style={styles.backgroundImage} />
-        <Text style={styles.neonText}>KimyCompany</Text> {/* Neon text */}
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -240,16 +225,6 @@ const styles = StyleSheet.create({
     opacity: 0.1,
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
-  },
-  neonText: {
-    position: 'absolute',
-    bottom: 30,
-    left: '50%',
-    transform: [{ translateX: -75 }],
-    fontSize: 40,
-    color: '#FF00FF', // Neon pink color
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   settingsContainer: {
     flex: 1,
