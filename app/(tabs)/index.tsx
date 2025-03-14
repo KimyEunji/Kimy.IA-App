@@ -12,7 +12,7 @@ const App = () => {
   const [isSettings, setIsSettings] = useState(false);
   const [image, setImage] = useState(null);
   const [username, setUsername] = useState('');
-  const [messages, setMessages] = useState([ 
+  const [messages, setMessages] = useState([
     { id: 1, text: '¡Hola! ¿En qué puedo ayudarte hoy?', sender: 'bot', timestamp: new Date() },
   ]);
   const [messageText, setMessageText] = useState('');
@@ -21,9 +21,11 @@ const App = () => {
     const loadData = async () => {
       const savedUsername = await AsyncStorage.getItem('username');
       const savedImage = await AsyncStorage.getItem('userImage');
-      console.log("Datos cargados desde AsyncStorage:", savedUsername, savedImage);
+      const savedMessages = await AsyncStorage.getItem('messages');
+      console.log("Datos cargados desde AsyncStorage:", savedUsername, savedImage, savedMessages);
       if (savedUsername) setUsername(savedUsername);
       if (savedImage) setImage(savedImage);
+      if (savedMessages) setMessages(JSON.parse(savedMessages));
     };
     loadData();
   }, []);
@@ -58,36 +60,39 @@ const App = () => {
   const sendMessage = () => {
     if (messageText.trim()) {
       const userMessage = { id: messages.length + 1, text: messageText, sender: 'user', timestamp: new Date() };
-      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      const newMessages = [...messages, userMessage];
+      setMessages(newMessages);
       setMessageText('');
 
       let botResponse = '';
       if (messageText.toLowerCase().includes('hola')) {
-        botResponse = ¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?;
+        botResponse = `¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?`;
       } else if (messageText.toLowerCase().includes('adiós')) {
-        botResponse = Adiós ${username || 'usuario'}! Espero que hablemos pronto.;
+        botResponse = `Adiós ${username || 'usuario'}! Espero que hablemos pronto.`;
       } else {
         botResponse = 'Lo siento, no puedo entenderte. ¿En qué puedo ayudarte?';
       }
 
       setTimeout(() => {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: prevMessages.length + 1,
-            text: botResponse,
-            sender: 'bot',
-            timestamp: new Date(),
-          },
-        ]);
+        const botMessage = {
+          id: newMessages.length + 1,
+          text: botResponse,
+          sender: 'bot',
+          timestamp: new Date(),
+        };
+        const updatedMessages = [...newMessages, botMessage];
+        setMessages(updatedMessages);
+        AsyncStorage.setItem('messages', JSON.stringify(updatedMessages)); // Guarda los mensajes
       }, 1000);
     }
   };
 
   const resetMessages = () => {
-    setMessages([ 
-      { id: 1, text: ¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?, sender: 'bot', timestamp: new Date() },
-    ]);
+    const initialMessages = [
+      { id: 1, text: `¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?`, sender: 'bot', timestamp: new Date() },
+    ];
+    setMessages(initialMessages);
+    AsyncStorage.setItem('messages', JSON.stringify(initialMessages)); // Guarda los mensajes
   };
 
   const toggleScreen = () => {
@@ -104,11 +109,11 @@ const App = () => {
     const hours = date.getHours() % 12 || 12;
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-    const timeString = ${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm};
+    const timeString = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
 
-    if (isToday) return Hoy;
-    if (isYesterday) return Ayer;
-    return ${dateString};
+    if (isToday) return 'Hoy';
+    if (isYesterday) return 'Ayer';
+    return `${dateString}`;
   };
 
   const formatTime = (timestamp) => {
@@ -116,7 +121,7 @@ const App = () => {
     const hours = date.getHours() % 12 || 12;
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-    return ${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm};
+    return `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
   };
 
   return (
@@ -212,170 +217,201 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1C1C1C',
+  container:
+   {
+     flex: 1,
+      backgroundColor: '#1C1C1C' 
+    },
+  backgroundImage:
+   {
+     position: 'absolute',
+      top: 0,
+       left: 0,
+        right: 0,
+         bottom: 0,
+          opacity: 0.1,
+           width: Dimensions.get('window').width,
+            height: Dimensions.get('window').height 
+          },
+  settingsContainer:
+   {
+     flex: 1,
+      padding: 20,
+       backgroundColor: '#2C1C1C' 
+      },
+  header:
+   {
+     flexDirection: 'row',
+      justifyContent: 'space-between',
+       alignItems: 'center',
+        marginBottom: 20 
+      },
+  headerLeft:
+   {
+     flexDirection: 'row',
+      alignItems: 'center' 
+    },
+  headerText:
+   {
+     fontSize: 24,
+      fontWeight: 'bold',
+       color: '#fff' 
+      },
+  headerRight:
+   {
+     flexDirection: 'row',
+      alignItems: 'center' 
+    },
+  resetButton:
+   {
+     backgroundColor: '#0078FF',
+      padding: 5,
+       borderRadius: 10,
+        marginRight: 10 
+      },
+  resetButtonText:
+   {
+     color: '#fff',
+      fontWeight: 'bold' 
+    },
+  settingsButton:
+   {
+     padding: 5 
+    },
+  profileContainer:
+   {
+     alignItems: 'center',
+      marginBottom: 30 
+    },
+  profileImage:
+   {
+     width: 100,
+      height: 100,
+       borderRadius: 50 
+      },
+  editIcon:
+   {
+     position: 'absolute',
+      bottom: 50,
+       right: 100,
+        backgroundColor: '#fff',
+         borderRadius: 20,
+          padding: 5 
+        },
+  usernameContainer:
+   {
+     marginTop: 10,
+      width: '80%' 
+    },
+  input:
+   {
+     borderWidth: 1,
+      borderColor: '#0078FF',
+       padding: 10,
+        borderRadius: 10,
+         color: '#fff' 
+        },
+  saveButton:
+   {
+     backgroundColor: '#0078FF',
+      padding: 15,
+       borderRadius: 10,
+        marginTop: 20,
+         alignItems: 'center' 
+        },
+  saveButtonText:
+   {
+     color: '#fff',
+      fontWeight: 'bold' 
+    },
+  chatContainer:
+   {
+     flex: 1, 
+     padding: 20 
+    },
+  dateContainer:
+   {
+     alignItems: 'center',
+      marginBottom: 10 
+    },
+  dateText:
+   {
+     color: '#fff', 
+     fontSize: 12 
+    },
+  messagesContainer:
+   {
+     flex: 1 
+    },
+  messageHeader:
+   {
+     flexDirection: 'row',
+      alignItems: 'center',
+       marginBottom: 5 
+      },
+  messageSender:
+   {
+     color: '#fff',
+      fontWeight: 'bold',
+       marginLeft: 10 
+      },
+  messageText:
+   {
+     color: '#fff',
+      fontSize: 16,
+       marginVertical: 5 
+      },
+  messageTime:
+   {
+     color: '#888',
+      fontSize: 12,
+       textAlign: 'right' 
+      },
+  botMessage:
+   {
+     backgroundColor: '#333',
+      padding: 10,
+       borderRadius: 10,
+        marginBottom: 10,
+         maxWidth: '80%',
+          alignSelf: 'flex-start' 
+        },
+  userMessage:
+   {
+     backgroundColor: '#0078FF',
+      padding: 10,
+       borderRadius: 10,
+        marginBottom: 10,
+         maxWidth: '80%',
+          alignSelf: 'flex-end' 
+        },
+  avatar:
+   {
+     width: 30,
+      height: 30,
+       borderRadius: 15 
+      },
+  inputContainer:
+   {
+     flexDirection: 'row', 
+     alignItems: 'center',
+      marginTop: 20 
+    },
+  inputMessage:
+   { 
+    flex: 1, 
+    backgroundColor: '#fff', 
+    color: '#000', 
+    padding: 10, 
+    borderRadius: 10 
   },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.1,
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
-  settingsContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#2C1C1C',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  resetButton: {
-    backgroundColor: '#0078FF',
-    padding: 5,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  resetButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  settingsButton: {
-    padding: 5,
-  },
-  profileContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  editIcon: {
-    position: 'absolute',
-    bottom: 50,
-    right: 100,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 5,
-  },
-  usernameContainer: {
-    marginTop: 10,
-    width: '80%',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#0078FF',
-    padding: 10,
-    borderRadius: 10,
-    color: '#fff',
-  },
-  saveButton: {
-    backgroundColor: '#0078FF',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  chatContainer: {
-    flex: 1,
-    padding: 20,
-  },
-  dateContainer: {
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  dateText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-  messagesContainer: {
-    flex: 1,
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  messageSender: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  messageText: {
-    color: '#fff',
-    fontSize: 16,
-    marginVertical: 5,
-  },
-  messageTime: {
-    color: '#888',
-    fontSize: 12,
-    textAlign: 'right',
-  },
-  botMessage: {
-    backgroundColor: '#333',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    maxWidth: '80%',
-    alignSelf: 'flex-start',
-  },
-  userMessage: {
-    backgroundColor: '#0078FF',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    maxWidth: '80%',
-    alignSelf: 'flex-end',
-  },
-  avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  inputMessage: {
-    flex: 1,
-    backgroundColor: '#fff',
-    color: '#000',
-    padding: 10,
-    borderRadius: 10,
-  },
-  sendButton: {
-    backgroundColor: '#0078FF',
-    padding: 10,
-    borderRadius: 10,
-    marginLeft: 10,
-  },
+  sendButton:
+   {
+     backgroundColor: '#0078FF', 
+     padding: 10, 
+     borderRadius: 10, 
+     marginLeft: 10 
+    },
 });
 
 export default App;

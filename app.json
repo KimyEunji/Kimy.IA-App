@@ -31,11 +31,7 @@
           "image": "./assets/images/splashicon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#1C1C1C",
-          "text": "KimyCompany",
-          "textColor": "#FF00FF",
-          "textSize": 24,
-          "textPosition": "bottom"
+          "backgroundColor": "#1C1C1C"
         }
       ]
     ],
