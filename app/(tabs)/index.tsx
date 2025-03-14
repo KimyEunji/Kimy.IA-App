@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const botAvatar = require('../../assets/images/botavatar.jpg');
 const kimyImage = require('../../assets/images/kimyimage.jpg');
-const placeholderImage = require('../../assets/images/avatarplaceholder.jpg');  
+const placeholderImage = require('../../assets/images/avatarplaceholder.jpg');
 
 const App = () => {
   const [isSettings, setIsSettings] = useState(false);
@@ -17,6 +17,17 @@ const App = () => {
   ]);
   const [messageText, setMessageText] = useState('');
 
+  useEffect(() => {
+    const loadData = async () => {
+      const savedUsername = await AsyncStorage.getItem('username');
+      const savedImage = await AsyncStorage.getItem('userImage');
+      console.log("Datos cargados desde AsyncStorage:", savedUsername, savedImage);
+      if (savedUsername) setUsername(savedUsername);
+      if (savedImage) setImage(savedImage);
+    };
+    loadData();
+  }, []);
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -25,15 +36,19 @@ const App = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setImage(result.uri);
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);  // Establece la imagen seleccionada
+      console.log("Imagen seleccionada:", result.assets[0].uri);
     }
   };
 
   const saveSettings = async () => {
     if (username.trim()) {
       await AsyncStorage.setItem('username', username);
-      if (image) await AsyncStorage.setItem('userImage', image);
+      if (image) {
+        await AsyncStorage.setItem('userImage', image); 
+        console.log("Imagen guardada en AsyncStorage:", image);
+      }
       Alert.alert('Configuración guardada', '¡Tus cambios se han guardado correctamente!');
     } else {
       Alert.alert('Error', 'Por favor, ingresa un nombre de usuario.');
@@ -44,7 +59,6 @@ const App = () => {
     if (messageText.trim()) {
       const userMessage = { id: messages.length + 1, text: messageText, sender: 'user', timestamp: new Date() };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
-
       setMessageText('');
 
       let botResponse = '';
@@ -83,13 +97,10 @@ const App = () => {
   const formatDate = (timestamp) => {
     const now = new Date();
     const date = new Date(timestamp);
-    
     const isToday = now.toDateString() === date.toDateString();
     const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === date.toDateString();
-    
     const options = { day: '2-digit', month: 'long' };
     const dateString = new Intl.DateTimeFormat('es-ES', options).format(date);
-    
     const hours = date.getHours() % 12 || 12;
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
@@ -110,7 +121,6 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Imagen de fondo */}
       <Image source={kimyImage} style={styles.backgroundImage} />
       {isSettings ? (
         <View style={styles.settingsContainer}>
@@ -356,11 +366,10 @@ const styles = StyleSheet.create({
   inputMessage: {
     flex: 1,
     backgroundColor: '#fff',
-    color: '#000', // Cambié el color del texto a blanco
+    color: '#000',
     padding: 10,
     borderRadius: 10,
   },
-  
   sendButton: {
     backgroundColor: '#0078FF',
     padding: 10,

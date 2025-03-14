@@ -2,7 +2,7 @@
   "expo": {
     "name": "KimyIA",
     "slug": "KimyIA",
-    "version": "1.0.0",
+    "version": "1.11",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptiveicon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1C1C1C"
       },
       "package": "com.kimy.KimyIA"
     },
@@ -31,7 +31,7 @@
           "image": "./assets/images/splashicon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#1C1C1C"
         }
       ]
     ],
