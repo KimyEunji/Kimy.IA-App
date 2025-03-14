@@ -16,6 +16,7 @@ const App = () => {
     { id: 1, text: '¡Hola! ¿En qué puedo ayudarte hoy?', sender: 'bot', timestamp: new Date() },
   ]);
   const [messageText, setMessageText] = useState('');
+  const [isBotTyping, setIsBotTyping] = useState(false); // Estado para manejar el "escribiendo..."
 
   useEffect(() => {
     const loadData = async () => {
@@ -64,6 +65,9 @@ const App = () => {
       setMessages(newMessages);
       setMessageText('');
 
+      // Mostrar "Kimy.IA está escribiendo..."
+      setIsBotTyping(true);
+
       let botResponse = '';
       if (messageText.toLowerCase().includes('hola')) {
         botResponse = `¡Hola ${username || 'usuario'}! ¿En qué puedo ayudarte hoy?`;
@@ -74,6 +78,9 @@ const App = () => {
       }
 
       setTimeout(() => {
+        // Ocultar "Kimy.IA está escribiendo..."
+        setIsBotTyping(false);
+
         const botMessage = {
           id: newMessages.length + 1,
           text: botResponse,
@@ -83,7 +90,7 @@ const App = () => {
         const updatedMessages = [...newMessages, botMessage];
         setMessages(updatedMessages);
         AsyncStorage.setItem('messages', JSON.stringify(updatedMessages)); // Guarda los mensajes
-      }, 1000);
+      }, 2000); // Se simula que el bot tarda 2 segundos en escribir
     }
   };
 
@@ -122,6 +129,30 @@ const App = () => {
     const minutes = date.getMinutes();
     const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
     return `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`;
+  };
+
+  const groupMessagesByDay = (messages) => {
+    const groupedMessages = [];
+    let currentDate = null;
+    let dayMessages = [];
+
+    messages.forEach((message) => {
+      const messageDate = formatDate(message.timestamp);
+      if (messageDate !== currentDate) {
+        if (dayMessages.length > 0) {
+          groupedMessages.push({ date: currentDate, messages: dayMessages });
+        }
+        currentDate = messageDate;
+        dayMessages = [];
+      }
+      dayMessages.push(message);
+    });
+
+    if (dayMessages.length > 0) {
+      groupedMessages.push({ date: currentDate, messages: dayMessages });
+    }
+
+    return groupedMessages;
   };
 
   return (
@@ -173,30 +204,38 @@ const App = () => {
             </View>
           </View>
 
-          <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>{formatDate(messages[messages.length - 1].timestamp)}</Text>
-          </View>
-
           <ScrollView style={styles.messagesContainer}>
-            {messages.map((message) => (
-              <View
-                key={message.id}
-                style={message.sender === 'bot' ? styles.botMessage : styles.userMessage}
-              >
-                <View style={styles.messageHeader}>
-                  {message.sender === 'bot' ? (
-                    <Image source={botAvatar} style={styles.avatar} />
-                  ) : (
-                    <Image source={image ? { uri: image } : placeholderImage} style={styles.avatar} />
-                  )}
-                  <Text style={styles.messageSender}>
-                    {message.sender === 'bot' ? 'Kimy.IA' : username || 'Usuario'}
-                  </Text>
+            {groupMessagesByDay(messages).map((group, index) => (
+              <View key={index}>
+                <View style={styles.dateContainer}>
+                  <Text style={styles.dateText}>{group.date}</Text>
                 </View>
-                <Text style={styles.messageText}>{message.text}</Text>
-                <Text style={styles.messageTime}>{formatTime(message.timestamp)}</Text>
+                {group.messages.map((message) => (
+                  <View
+                    key={message.id}
+                    style={message.sender === 'bot' ? styles.botMessage : styles.userMessage}
+                  >
+                    <View style={styles.messageHeader}>
+                      {message.sender === 'bot' ? (
+                        <Image source={botAvatar} style={styles.avatar} />
+                      ) : (
+                        <Image source={image ? { uri: image } : placeholderImage} style={styles.avatar} />
+                      )}
+                      <Text style={styles.messageSender}>
+                        {message.sender === 'bot' ? 'Kimy.IA' : username || 'Usuario'}
+                      </Text>
+                    </View>
+                    <Text style={styles.messageText}>{message.text}</Text>
+                    <Text style={styles.messageTime}>{formatTime(message.timestamp)}</Text>
+                  </View>
+                ))}
               </View>
             ))}
+            {isBotTyping && (
+              <View style={styles.botMessage}>
+                <Text style={styles.messageText}>Kimy.IA está escribiendo...</Text>
+              </View>
+            )}
           </ScrollView>
 
           <View style={styles.inputContainer}>
@@ -204,7 +243,8 @@ const App = () => {
               style={styles.inputMessage}
               value={messageText}
               onChangeText={setMessageText}
-              placeholder="Escribe un mensaje"
+              placeholder="Escribe un mensaje..."
+              placeholderTextColor="#888"
             />
             <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
               <Ionicons name="send" size={24} color="#fff" />
@@ -257,13 +297,13 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
        color: '#fff' 
       },
-  headerRight:
-   {
+  headerRight: 
+  {
      flexDirection: 'row',
       alignItems: 'center' 
     },
-  resetButton:
-   {
+  resetButton: 
+  {
      backgroundColor: '#0078FF',
       padding: 5,
        borderRadius: 10,
@@ -271,8 +311,8 @@ const styles = StyleSheet.create({
       },
   resetButtonText:
    {
-     color: '#fff',
-      fontWeight: 'bold' 
+     color: '#fff', 
+     fontWeight: 'bold' 
     },
   settingsButton:
    {
@@ -285,19 +325,19 @@ const styles = StyleSheet.create({
     },
   profileImage:
    {
-     width: 100,
-      height: 100,
-       borderRadius: 50 
-      },
-  editIcon:
-   {
+     width: 100, 
+     height: 100, 
+     borderRadius: 50 
+    },
+  editIcon: 
+  {
      position: 'absolute',
-      bottom: 50,
-       right: 100,
-        backgroundColor: '#fff',
-         borderRadius: 20,
-          padding: 5 
-        },
+      bottom: 50, 
+      right: 100,
+       backgroundColor: '#fff', 
+       borderRadius: 20, 
+       padding: 5
+       },
   usernameContainer:
    {
      marginTop: 10,
@@ -305,20 +345,20 @@ const styles = StyleSheet.create({
     },
   input:
    {
-     borderWidth: 1,
-      borderColor: '#0078FF',
-       padding: 10,
-        borderRadius: 10,
-         color: '#fff' 
-        },
+     borderWidth: 1, 
+     borderColor: '#0078FF',
+      padding: 10,
+       borderRadius: 10,
+        color: '#fff' 
+      },
   saveButton:
    {
      backgroundColor: '#0078FF',
       padding: 15,
        borderRadius: 10,
-        marginTop: 20,
-         alignItems: 'center' 
-        },
+        marginTop: 20, 
+        alignItems: 'center' 
+      },
   saveButtonText:
    {
      color: '#fff',
@@ -326,14 +366,14 @@ const styles = StyleSheet.create({
     },
   chatContainer:
    {
-     flex: 1, 
-     padding: 20 
+     flex: 1,
+      padding: 20 
     },
   dateContainer:
    {
-     alignItems: 'center',
-      marginBottom: 10 
-    },
+     alignItems: 'center', 
+     marginBottom: 10
+     },
   dateText:
    {
      color: '#fff', 
@@ -345,22 +385,22 @@ const styles = StyleSheet.create({
     },
   messageHeader:
    {
-     flexDirection: 'row',
-      alignItems: 'center',
-       marginBottom: 5 
-      },
+     flexDirection: 'row', 
+     alignItems: 'center',
+      marginBottom: 5 
+    },
   messageSender:
    {
      color: '#fff',
       fontWeight: 'bold',
        marginLeft: 10 
       },
-  messageText:
-   {
-     color: '#fff',
-      fontSize: 16,
-       marginVertical: 5 
-      },
+  messageText: 
+  {
+     color: '#fff', 
+     fontSize: 16,
+      marginVertical: 5 
+    },
   messageTime:
    {
      color: '#888',
@@ -368,14 +408,14 @@ const styles = StyleSheet.create({
        textAlign: 'right' 
       },
   botMessage:
-   {
-     backgroundColor: '#333',
-      padding: 10,
-       borderRadius: 10,
-        marginBottom: 10,
-         maxWidth: '80%',
-          alignSelf: 'flex-start' 
-        },
+   { 
+    backgroundColor: '#333',
+     padding: 10,
+      borderRadius: 10, 
+      marginBottom: 10, 
+      maxWidth: '80%',
+       alignSelf: 'flex-start' 
+      },
   userMessage:
    {
      backgroundColor: '#0078FF',
@@ -391,27 +431,27 @@ const styles = StyleSheet.create({
       height: 30,
        borderRadius: 15 
       },
-  inputContainer:
-   {
+  inputContainer: 
+  {
      flexDirection: 'row', 
      alignItems: 'center',
       marginTop: 20 
     },
   inputMessage:
-   { 
-    flex: 1, 
-    backgroundColor: '#fff', 
-    color: '#000', 
-    padding: 10, 
-    borderRadius: 10 
-  },
+   {
+     flex: 1,
+      backgroundColor: '#fff', 
+      color: '#000',
+       padding: 10,
+        borderRadius: 10 
+      },
   sendButton:
    {
-     backgroundColor: '#0078FF', 
-     padding: 10, 
-     borderRadius: 10, 
-     marginLeft: 10 
-    },
+     backgroundColor: '#0078FF',
+      padding: 10,
+       borderRadius: 10,
+        marginLeft: 10 
+      },
 });
 
 export default App;
